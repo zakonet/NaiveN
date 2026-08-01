@@ -1,0 +1,44 @@
+{
+  "name": "naiven",
+  "version": "0.1.0",
+  "description": "A visual low-code builder for Naive UI and Vue 3",
+  "license": "Apache-2.0",
+  "author": "Zako <contact@zako.net.cn>",
+  "keywords": [
+    "vue",
+    "vue3",
+    "naive-ui",
+    "low-code",
+    "page-builder",
+    "tailwindcss",
+    "vite"
+  ],
+  "bugs": {
+    "email": "contact@zako.net.cn"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vicons/ionicons5": "^0.13.0",
+    "@vueuse/core": "^14.4.0",
+    "monaco-editor": "^0.56.0",
+    "naive-ui": "^2.44.1",
+    "prettier": "^3.9.6",
+    "tailwindcss": "^4.3.3",
+    "vue": "^3.5.40",
+    "vue-draggable-plus": "^0.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/tsconfig": "^0.9.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0",
+    "vue-tsc": "^3.3.8"
+  }
+}
