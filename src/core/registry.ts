@@ -1,5 +1,7 @@
 import { defineAsyncComponent, type Component } from 'vue'
 
+import naiveComponentManifest from 'virtual:naive-ui-component-manifest'
+
 import { createComponentNode, createTextNode } from './schema'
 import type {
   ComponentMetadata,
@@ -82,8 +84,6 @@ class ComponentRegistry {
   }
 }
 
-type NaiveModule = Record<string, unknown>
-type NaiveModuleLoader = () => Promise<NaiveModule>
 type RuntimePropDefinition =
   | Function
   | Function[]
@@ -114,17 +114,16 @@ function text(value: string): SchemaNode {
   return createTextNode(value)
 }
 
-const naiveComponentLoaders = import.meta.glob<NaiveModule>(
-  '/node_modules/naive-ui/es/*/index.mjs',
-)
-const naiveComponentDeclarations = import.meta.glob<string>(
-  '/node_modules/naive-ui/es/*/index.d.ts',
-  {
-    eager: true,
-    import: 'default',
-    query: '?raw',
-  },
-)
+type NaiveLoaderModule = typeof import('./naive-loaders')
+let naiveLoaderModulePromise: Promise<NaiveLoaderModule> | undefined
+
+function loadNaiveLoaderModule(): Promise<NaiveLoaderModule> {
+  return (naiveLoaderModulePromise ??= import('./naive-loaders'))
+}
+
+function loadNaiveModule(modulePath: string): ReturnType<NaiveLoaderModule['loadNaiveModule']> {
+  return loadNaiveLoaderModule().then(({ loadNaiveModule: load }) => load(modulePath))
+}
 
 function toReadableLabel(name: string): string {
   return name
@@ -286,35 +285,12 @@ function inferPropsSchema(component: Component): PropertySchema[] {
     })
 }
 
-function resolveModulePath(declarationPath: string): string {
-  return declarationPath.replace(/index\.d\.ts$/, 'index.mjs')
-}
-
-function isPublicNaiveModulePath(declarationPath: string): boolean {
-  const moduleName = declarationPath.match(/\/es\/([^/]+)\/index\.d\.ts$/)?.[1]
-
-  return Boolean(moduleName && !moduleName.startsWith('_'))
-}
-
-function extractComponentNames(declaration: string): string[] {
-  const names = new Set<string>()
-  const componentNamePattern = /\bN[A-Z][A-Za-z0-9]*\b/g
-  let match = componentNamePattern.exec(declaration)
-
-  while (match) {
-    names.add(match[0])
-    match = componentNamePattern.exec(declaration)
-  }
-
-  return [...names]
-}
-
 function createAsyncNaiveComponent(
   name: string,
-  loader: NaiveModuleLoader,
+  modulePath: string,
 ): Component {
   return defineAsyncComponent(async () => {
-    const module = await loader()
+    const module = await loadNaiveModule(modulePath)
     const component = module[name]
 
     if (!component) {
@@ -327,9 +303,9 @@ function createAsyncNaiveComponent(
 
 async function loadNaivePropsSchema(
   name: string,
-  loader: NaiveModuleLoader,
+  modulePath: string,
 ): Promise<PropertySchema[]> {
-  const module = await loader()
+  const module = await loadNaiveModule(modulePath)
   const component = module[name]
 
   if (!component) {
@@ -340,28 +316,15 @@ async function loadNaivePropsSchema(
 }
 
 export function registerNaiveUIComponents(): void {
-  for (const [declarationPath, declaration] of Object.entries(naiveComponentDeclarations)) {
-    if (!isPublicNaiveModulePath(declarationPath)) {
-      continue
-    }
+  for (const { name, modulePath } of naiveComponentManifest) {
+    const component = createAsyncNaiveComponent(name, modulePath)
 
-    const modulePath = resolveModulePath(declarationPath)
-    const loader = naiveComponentLoaders[modulePath]
-
-    if (!loader) {
-      continue
-    }
-
-    for (const name of extractComponentNames(declaration)) {
-      const component = createAsyncNaiveComponent(name, loader)
-
-      componentRegistry.upsertComponent(
-        {
-          ...createNaiveComponentMetadata(name, component),
-          loadPropsSchema: () => loadNaivePropsSchema(name, loader),
-        },
-      )
-    }
+    componentRegistry.upsertComponent(
+      {
+        ...createNaiveComponentMetadata(name, component),
+        loadPropsSchema: () => loadNaivePropsSchema(name, modulePath),
+      },
+    )
   }
 }
 

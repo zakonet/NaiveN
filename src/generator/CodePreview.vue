@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import {
-  NAlert,
-  NButton,
-  NDrawer,
-  NDrawerContent,
-  NIcon,
-} from 'naive-ui'
+import { NAlert } from 'naive-ui/es/alert'
+import { NButton } from 'naive-ui/es/button'
+import { NDrawer, NDrawerContent } from 'naive-ui/es/drawer'
+import { NIcon } from 'naive-ui/es/icon'
 import {
   CheckmarkOutline,
   CloseOutline,
+  CodeSlashOutline,
   CopyOutline,
   DownloadOutline,
 } from '@vicons/ionicons5'
@@ -164,7 +162,7 @@ onBeforeUnmount(() => {
       <template #header>
         <div class="flex min-w-0 items-center gap-3">
           <div class="flex h-8 w-8 shrink-0 items-center justify-center bg-emerald-600 text-white">
-            <NIcon size="17">
+            <NIcon aria-hidden="true" size="17">
               <CodeSlashOutline />
             </NIcon>
           </div>
@@ -194,7 +192,7 @@ onBeforeUnmount(() => {
               @click="copyCode"
             >
               <template #icon>
-                <NIcon>
+                <NIcon aria-hidden="true">
                   <CheckmarkOutline v-if="copyState === 'copied'" />
                   <CloseOutline v-else-if="copyState === 'error'" />
                   <CopyOutline v-else />
@@ -210,7 +208,7 @@ onBeforeUnmount(() => {
               @click="downloadCode"
             >
               <template #icon>
-                <NIcon><DownloadOutline /></NIcon>
+                <NIcon aria-hidden="true"><DownloadOutline /></NIcon>
               </template>
             </NButton>
             <NButton
@@ -221,7 +219,7 @@ onBeforeUnmount(() => {
               @click="close"
             >
               <template #icon>
-                <NIcon><CloseOutline /></NIcon>
+                <NIcon aria-hidden="true"><CloseOutline /></NIcon>
               </template>
             </NButton>
           </div>

@@ -23,7 +23,9 @@ interface ComponentMetadata {
 
 ## Naive UI discovery
 
-NaiveN scans Naive UI module declarations from `node_modules/naive-ui/es/*/index.d.ts`, extracts public component names, and creates lazy Vue components from matching `index.mjs` modules.
+At build time, the Vite configuration scans Naive UI module declarations from `node_modules/naive-ui/es/*/index.d.ts` and emits a small component manifest. The application bundles only the component names and module paths, then creates lazy Vue components from matching `index.mjs` modules at runtime.
+
+This keeps the palette broad without embedding every declaration file in the initial browser bundle. Component modules and runtime prop metadata are still loaded only when a component is rendered or inspected.
 
 That gives the palette broad Naive UI coverage without manually listing each component.
 
@@ -77,4 +79,3 @@ registerComponent({
 ```
 
 The future plugin API should wrap this function and add lifecycle hooks, package metadata, and optional generator rules.
-

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { CloseOutline, OptionsOutline } from '@vicons/ionicons5'
+import { NIcon } from 'naive-ui/es/icon'
 
 import { componentRegistry } from '../core/registry'
 import {
@@ -10,6 +12,10 @@ import {
   type SchemaValue,
 } from '../core/types'
 import { useBuilderStore } from '../stores/builder'
+
+const emit = defineEmits<{
+  close: []
+}>()
 
 const store = useBuilderStore()
 const inferredPropsSchema = ref<readonly PropertySchema[]>([])
@@ -249,25 +255,42 @@ function commitJsonInput(field: PropertySchema): void {
 </script>
 
 <template>
-  <aside class="border-l border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-    <div class="border-b border-slate-200 px-4 py-4 dark:border-slate-800">
-      <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600">
-        Inspector
+  <aside class="flex min-h-0 flex-col border-l border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <header class="border-b border-slate-200 px-4 py-4 dark:border-slate-800">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex min-w-0 items-center gap-2.5">
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+            <NIcon aria-hidden="true" size="17"><OptionsOutline /></NIcon>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-600 dark:text-emerald-400">Inspector</p>
+            <h2 class="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
+              {{ selectedLabel }}
+            </h2>
+          </div>
+        </div>
+        <button
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          type="button"
+          aria-label="Hide inspector"
+          title="Hide inspector"
+          @click="emit('close')"
+        >
+          <NIcon aria-hidden="true" size="16"><CloseOutline /></NIcon>
+        </button>
+      </div>
+      <p class="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
+        {{ selectedNode ? 'Adjust the selected node without leaving the canvas.' : 'Select a node on the canvas to edit it.' }}
       </p>
-      <h2 class="mt-1 text-base font-semibold text-slate-900 dark:text-slate-50">
-        {{ selectedLabel }}
-      </h2>
-    </div>
+    </header>
 
-    <div class="min-h-0 overflow-y-auto p-4">
-      <div v-if="selectedNode" class="mb-4 border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
+    <div class="min-h-0 flex-1 overflow-y-auto p-4">
+      <div v-if="selectedNode" class="mb-4 border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-950">
         <div class="flex items-center justify-between gap-3">
-          <label
-            class="text-xs font-medium text-slate-600 dark:text-slate-300"
-            for="node-scale"
-          >
-            Scale
-          </label>
+          <div>
+            <label class="text-xs font-semibold text-slate-700 dark:text-slate-200" for="node-scale">Scale</label>
+            <p class="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">Visual size on the canvas</p>
+          </div>
           <input
             class="h-8 w-16 border border-slate-200 bg-white px-2 text-right text-xs text-slate-800 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             type="number"
@@ -275,7 +298,7 @@ function commitJsonInput(field: PropertySchema): void {
             max="3"
             step="0.05"
             :value="selectedScale"
-            @input="handleScaleInput"
+            @change="handleScaleInput"
           />
         </div>
         <input
@@ -302,7 +325,7 @@ function commitJsonInput(field: PropertySchema): void {
       </div>
 
       <div v-else-if="componentNode" class="grid gap-4">
-        <div class="border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
+        <div class="border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-950">
           <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Schema node
           </p>
@@ -400,8 +423,15 @@ function commitJsonInput(field: PropertySchema): void {
         </div>
       </div>
 
-      <div v-else class="text-xs leading-5 text-slate-500 dark:text-slate-400">
-        Select a component on the canvas to inspect and edit its props.
+      <div v-else class="flex min-h-56 items-center justify-center border border-dashed border-slate-300 bg-slate-50 p-6 text-center dark:border-slate-700 dark:bg-slate-950">
+        <div class="max-w-44">
+          <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-500">
+            <NIcon aria-hidden="true" size="18"><OptionsOutline /></NIcon>
+          </div>
+          <p class="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
+            Select a component on the canvas to inspect its properties.
+          </p>
+        </div>
       </div>
     </div>
   </aside>

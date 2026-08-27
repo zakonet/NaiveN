@@ -38,6 +38,10 @@ const validAttributeNamePattern = /^[A-Za-z_:][A-Za-z0-9:._-]*$/
 const validHandlerReferencePattern = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/
 const validHandlerIdentifierPattern = /^[A-Za-z_$][\w$]*$/
 
+function isBuilderStyleProperty(name: string): boolean {
+  return name.startsWith('--naiven-')
+}
+
 function defaultComponentImportSource(componentName: string): string | undefined {
   return /^N[A-Z0-9]/.test(componentName) ? 'naive-ui' : undefined
 }
@@ -88,7 +92,7 @@ function isEmptyStyle(style?: SchemaStyle): boolean {
   }
 
   return Object.entries(style).every(
-    ([name, value]) => name === 'class' || value === undefined,
+    ([name, value]) => name === 'class' || isBuilderStyleProperty(name) || value === undefined,
   )
 }
 
@@ -119,7 +123,10 @@ function renderStyleAttribute(style?: SchemaStyle): string | undefined {
   }
 
   const declarations = Object.entries(style ?? {})
-    .filter(([name, value]) => name !== 'class' && value !== undefined)
+    .filter(
+      ([name, value]) =>
+        name !== 'class' && !isBuilderStyleProperty(name) && value !== undefined,
+    )
     .map(([name, value]) => `${toCssPropertyName(name)}: ${String(value)}`)
 
   if (declarations.length === 0) {
